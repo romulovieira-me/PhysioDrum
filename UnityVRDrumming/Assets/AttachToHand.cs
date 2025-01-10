@@ -1,10 +1,18 @@
 using UnityEngine;
 
+[ExecuteAlways] // Permite visualizar alterações no Editor, mesmo fora do Play Mode
 public class AttachToHand : MonoBehaviour
 {
+    [Header("Configuração da Mão")]
     public Transform handAnchor; // Referência para a mão (LeftHandAnchor ou RightHandAnchor)
-    public Vector3 positionOffset = new Vector3(0f, 0.1f, 0.2f); // Inicialize com valores para mover a baqueta
 
+    [Header("Offset da Baqueta")]
+    public Vector3 positionOffset = Vector3.zero; // Offset para ajustar a posição no editor
+
+    [Tooltip("Rotação da baqueta em relação à mão")]
+    public Vector3 rotationOffset = new Vector3(0f, 90f, 0f); // Offset de rotação
+
+    private Rigidbody rb;
 
     void Start()
     {
@@ -26,36 +34,24 @@ public class AttachToHand : MonoBehaviour
 
         // Ajusta a posição relativa aplicando o offset
         transform.localPosition = positionOffset;
-        transform.localRotation = Quaternion.Euler(0f, 90f, 0f); // Ajuste a rotação para alinhar a baqueta corretamente
+        transform.localRotation = Quaternion.Euler(rotationOffset);
 
-        Debug.Log("DrumstickA Parent: " + transform.parent.name);
-        Debug.Log("Drumstick Global Position: " + transform.position);
-
-        // Configura o Rigidbody para interagir com colisões
-        Rigidbody rb = GetComponent<Rigidbody>();
+        // Configura o Rigidbody para manter o objeto fixo
+        rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.isKinematic = false; // Permite física
-            rb.useGravity = false;  // Impede queda
+            rb.isKinematic = false; // Mantém fixa na mão
+            rb.useGravity = false; // Impede queda
         }
     }
 
     void LateUpdate()
     {
-        Debug.Log("Drumstick Global Position Atualizada: " + transform.position);
-    }
-
-
-    void Update()
-    {
-        // Garante que a drumstick fique alinhada à mão mesmo após colisões
+        // Garante que a Drumstick permaneça centralizada na mão com offset
         if (handAnchor != null)
         {
-            transform.position = handAnchor.position;
-            transform.rotation = handAnchor.rotation;
+            transform.position = handAnchor.position + handAnchor.rotation * positionOffset;
+            transform.rotation = handAnchor.rotation * Quaternion.Euler(rotationOffset);
         }
     }
-
-
-
 }
